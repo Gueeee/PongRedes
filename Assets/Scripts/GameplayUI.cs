@@ -1,13 +1,11 @@
 using UnityEngine;
 using TMPro;
 
-public class GameplayUI : MonoBehaviour
-{
+public class GameplayUI : MonoBehaviour {
     public TextMeshProUGUI scoreTextP1;
     public TextMeshProUGUI scoreTextP2;
 
-    void Start()
-    {
+    void Start() {
         // Subscreve ao evento do GameManager
         if (GameManager.Instance != null)
         {

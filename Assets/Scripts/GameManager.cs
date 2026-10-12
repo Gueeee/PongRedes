@@ -3,63 +3,46 @@ using UnityEngine.SceneManagement;
 using Unity.Netcode;
 using System;
 
-public class GameManager : NetworkBehaviour
-{
+public class GameManager : NetworkBehaviour {
     public static GameManager Instance { get; private set; }
 
-    // Variáveis de rede que sincronizam do Servidor para os Clientes
-    public NetworkVariable<int> scorePlayer1 = new NetworkVariable<int>(
-        0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
-    public NetworkVariable<int> scorePlayer2 = new NetworkVariable<int>(
-        0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> scorePlayer1 = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> scorePlayer2 = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     public event Action<int, int> OnScoreChanged;
 
-    void Awake()
-    {
-        if (Instance == null)
-        {
+    void Awake() {
+        if (Instance == null) {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
+        } else {
             Destroy(gameObject);
         }
 
         SceneManager.LoadScene("MainMenu");
     }
 
-    public override void OnNetworkSpawn()
-    {
-        // Quando qualquer valor mudar na rede, dispara o seu evento OnScoreChanged
+    public override void OnNetworkSpawn() {
         scorePlayer1.OnValueChanged += OnScoreValueChanged;
         scorePlayer2.OnValueChanged += OnScoreValueChanged;
 
-        // Notifica a UI com os valores atuais assim que entra na partida
         OnScoreChanged?.Invoke(scorePlayer1.Value, scorePlayer2.Value);
     }
 
-    public override void OnNetworkDespawn()
-    {
+    public override void OnNetworkDespawn() {
         scorePlayer1.OnValueChanged -= OnScoreValueChanged;
         scorePlayer2.OnValueChanged -= OnScoreValueChanged;
     }
 
-    private void OnScoreValueChanged(int previousValue, int newValue)
-    {
+    private void OnScoreValueChanged(int previousValue, int newValue) {
         OnScoreChanged?.Invoke(scorePlayer1.Value, scorePlayer2.Value);
     }
 
-    public void StartMatch()
-    {
+    public void StartMatch() {
         SceneManager.LoadScene("GameplayUI", LoadSceneMode.Additive);
     }
 
-    public void AddScore(int playerID)
-    {
-        // Apenas o Servidor altera a pontuação na rede
+    public void AddScore(int playerID) {
         if (!IsServer) return;
 
         if (playerID == 0) scorePlayer1.Value++;
